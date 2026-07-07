@@ -1,68 +1,64 @@
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 import type { Video } from "@video-module/shared";
 
-/**
- * NOTE: JSON-file store — perfectly fine for a standalone Node server with a
- * persistent disk (a VM, a Docker volume, Railway/Render/Fly with a mounted
- * volume, etc.), unlike serverless platforms where disk doesn't persist.
- * Swap this file's internals for Postgres/Supabase if you later move the
- * server itself to serverless.
- */
-
-const DATA_DIR = path.join(__dirname, "..", "data");
-const VIDEOS_FILE = path.join(DATA_DIR, "videos.json");
-const CHANNEL_IDS_FILE = path.join(DATA_DIR, "channel-ids.json");
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+function client() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) throw new Error("SUPABASE_URL / SUPABASE_SERVICE_KEY not set");
+  return createClient(url, key);
 }
 
-export function readAllVideos(): Video[] {
-  ensureDataDir();
-  if (!fs.existsSync(VIDEOS_FILE)) return [];
-  try {
-    return JSON.parse(fs.readFileSync(VIDEOS_FILE, "utf-8"));
-  } catch {
+export async function readAllVideos(): Promise<Video[]> {
+  const { data, error } = await client().from("videos").select("data");
+  if (error) {
+    console.error("[store] readAllVideos failed:", error.message);
     return [];
   }
+  return (data ?? []).map((row: any) => row.data as Video);
 }
 
-function writeAllVideos(videos: Video[]) {
-  ensureDataDir();
-  fs.writeFileSync(VIDEOS_FILE, JSON.stringify(videos, null, 2));
+export async function upsertVideos(incoming: Video[]): Promise<number> {
+  if (incoming.length === 0) return (await readAllVideos()).length;
+
+  const rows = incoming.map((v) => ({
+    youtube_id: v.youtubeId,
+    data: v,
+    views: v.views,
+    published_at: v.publishedAt,
+  }));
+
+  const { error } = await client().from("videos").upsert(rows, { onConflict: "youtube_id" });
+  if (error) console.error("[store] upsertVideos failed:", error.message);
+
+  const { count } = await client().from("videos").select("*", { count: "exact", head: true });
+  return count ?? incoming.length;
 }
 
-/** Upsert by youtubeId — new videos get inserted, existing ones get their stats refreshed. */
-export function upsertVideos(incoming: Video[]) {
-  const existing = readAllVideos();
-  const byYoutubeId = new Map(existing.map((v) => [v.youtubeId, v]));
-
-  for (const video of incoming) {
-    byYoutubeId.set(video.youtubeId, video);
+export async function getKnownYoutubeIds(): Promise<Set<string>> {
+  const { data, error } = await client().from("videos").select("youtube_id");
+  if (error) {
+    console.error("[store] getKnownYoutubeIds failed:", error.message);
+    return new Set();
   }
-
-  const merged = Array.from(byYoutubeId.values());
-  writeAllVideos(merged);
-  return merged.length;
+  return new Set((data ?? []).map((row: any) => row.youtube_id as string));
 }
 
-export function getKnownYoutubeIds(): Set<string> {
-  return new Set(readAllVideos().map((v) => v.youtubeId));
-}
-
-/** Resolved @handle -> channel_id (UC...) cache, so we only call the resolve API once per channel ever. */
-export function readChannelIdCache(): Record<string, string> {
-  ensureDataDir();
-  if (!fs.existsSync(CHANNEL_IDS_FILE)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(CHANNEL_IDS_FILE, "utf-8"));
-  } catch {
+export async function readChannelIdCache(): Promise<Record<string, string>> {
+  const { data, error } = await client().from("channel_ids").select("channel_key, youtube_channel_id");
+  if (error) {
+    console.error("[store] readChannelIdCache failed:", error.message);
     return {};
   }
+  const cache: Record<string, string> = {};
+  for (const row of data ?? []) cache[row.channel_key] = row.youtube_channel_id;
+  return cache;
 }
 
-export function writeChannelIdCache(cache: Record<string, string>) {
-  ensureDataDir();
-  fs.writeFileSync(CHANNEL_IDS_FILE, JSON.stringify(cache, null, 2));
+export async function writeChannelIdCache(cache: Record<string, string>): Promise<void> {
+  const rows = Object.entries(cache).map(([channel_key, youtube_channel_id]) => ({
+    channel_key,
+    youtube_channel_id,
+  }));
+  const { error } = await client().from("channel_ids").upsert(rows, { onConflict: "channel_key" });
+  if (error) console.error("[store] writeChannelIdCache failed:", error.message);
 }

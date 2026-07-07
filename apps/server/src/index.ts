@@ -9,9 +9,8 @@ app.use(cors());
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
 
-// GET /api/videos?sort=trending|latest&limit=6
-app.get("/api/videos", (req, res) => {
-  const videos = readAllVideos();
+app.get("/api/videos", async (req, res) => {
+  const videos = await readAllVideos();
   const sort = (req.query.sort as string) ?? "latest";
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
 
@@ -31,16 +30,15 @@ app.get("/api/videos", (req, res) => {
   res.json(result);
 });
 
-// GET /api/videos/:slug
-app.get("/api/videos/:slug", (req, res) => {
-  const video = readAllVideos().find((v) => v.slug === req.params.slug);
+app.get("/api/videos/:slug", async (req, res) => {
+  const videos = await readAllVideos();
+  const video = videos.find((v) => v.slug === req.params.slug);
   if (!video) return res.status(404).json({ error: "Not found" });
   res.json(video);
 });
 
-// GET /api/videos/:slug/related?limit=4
-app.get("/api/videos/:slug/related", (req, res) => {
-  const videos = readAllVideos();
+app.get("/api/videos/:slug/related", async (req, res) => {
+  const videos = await readAllVideos();
   const video = videos.find((v) => v.slug === req.params.slug);
   if (!video) return res.status(404).json({ error: "Not found" });
 
@@ -54,8 +52,6 @@ app.get("/api/videos/:slug/related", (req, res) => {
   res.json(related);
 });
 
-// POST /api/ingest — triggers the RSS discover -> YouTube enrich -> store upsert pipeline.
-// Protect with a shared secret so only your own cron can call it.
 app.post("/api/ingest", async (req, res) => {
   const auth = req.headers.authorization;
   if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {

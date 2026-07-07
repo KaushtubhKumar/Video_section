@@ -10,9 +10,8 @@ function apiKey() {
   return key;
 }
 
-/** Resolves @handle -> channel_id (UC...) once per channel, then caches it in data/channel-ids.json forever. */
 export async function resolveChannelIds(channels: ChannelConfig[]): Promise<Record<string, string>> {
-  const cache = readChannelIdCache();
+  const cache = await readChannelIdCache();
   const missing = channels.filter((c) => !cache[c.id]);
 
   for (const channel of missing) {
@@ -30,12 +29,11 @@ export async function resolveChannelIds(channels: ChannelConfig[]): Promise<Reco
     cache[channel.id] = channelId;
   }
 
-  if (missing.length > 0) writeChannelIdCache(cache);
+  if (missing.length > 0) await writeChannelIdCache(cache);
   return cache;
 }
 
 function parseIsoDuration(iso: string): number {
-  // e.g. PT14M32S, PT1H2M3S, PT45S
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return 0;
   const [, h, m, s] = match;
@@ -58,11 +56,6 @@ function accentFor(videoId: string) {
   return ACCENTS[hash % ACCENTS.length];
 }
 
-/**
- * Batched enrichment: videos.list accepts up to 50 comma-separated IDs per call,
- * so 500 new videos = only 10 API calls (~10 quota units total, since this endpoint
- * costs ~1 unit/call regardless of how many IDs are batched in).
- */
 export async function enrichVideos(
   videoIds: string[],
   channelMeta: { channelYoutubeId: string; channelName: string; category: string }[]
