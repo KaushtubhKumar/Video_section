@@ -55,14 +55,14 @@ button {
 }
 
 .container {
-  max-width: var(--max-width);
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 14px;
 }
 
 @media (max-width: 720px) {
   .container {
-    padding: 0 20px;
+    padding: 0 12px;
   }
 }
 
