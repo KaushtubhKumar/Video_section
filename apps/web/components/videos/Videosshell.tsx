@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sidebar } from "@/components/videos/SIdebar";
+import { Sidebar } from "@/components/videos/Sidebar";
 import { Topbar } from "@/components/videos/Topbar";
 import { MobileNav } from "@/components/videos/MobileNav";
 
