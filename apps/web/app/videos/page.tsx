@@ -11,15 +11,6 @@ export default async function VideosPage() {
 
   const channelCount = new Set(videos.map((v) => v.toolName)).size;
   const totalViews = videos.reduce((sum, v) => sum + v.views, 0);
-  const latest = [...videos].sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  )[0];
-
-  function formatCompact(n: number) {
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-    return `${n}`;
-  }
 
   return (
     <div className="min-h-screen bg-bg">
@@ -27,98 +18,47 @@ export default async function VideosPage() {
       <Topbar />
 
       <main className="pt-[60px] sm:pl-[64px]">
-        {/* Ambient field — ties the page together without a boring flat header */}
-        <div className="relative overflow-hidden border-b border-border">
-          <div
-            className="pointer-events-none absolute -top-40 left-[8%] h-[26rem] w-[26rem] rounded-full opacity-[0.35] blur-[110px]"
-            style={{ background: "radial-gradient(circle, #5e6ad2, transparent 70%)" }}
-          />
-          <div
-            className="pointer-events-none absolute -top-24 right-[4%] h-[18rem] w-[18rem] rounded-full opacity-[0.22] blur-[100px]"
-            style={{ background: "radial-gradient(circle, #a78bfa, transparent 70%)" }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-              backgroundSize: "48px 48px",
-              maskImage: "linear-gradient(to bottom, black, transparent 80%)",
-            }}
-          />
-
-          <div className="container relative py-10 sm:py-14">
-            <div className="flex items-center gap-1.5 font-mono text-[13.5px] text-muted">
-              <Link href="/" className="hover:text-secondary">Home</Link>
-              <span>/</span>
-              <span className="text-secondary">Videos</span>
-            </div>
-
-            <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-bg-elevated/80 py-1 pl-2 pr-3">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
-                  </span>
-                  <span className="font-mono text-[12.5px] font-medium uppercase tracking-[0.08em] text-secondary">
-                    Feed updates hourly
-                  </span>
-                </div>
-
-                <h1 className="text-[38px] font-bold leading-[1.05] tracking-[-0.02em] text-primary sm:text-[52px]">
-                  Every AI tool,{" "}
-                  <span className="bg-gradient-to-r from-accent-hover to-[#a78bfa] bg-clip-text text-transparent">
-                    caught on camera
-                  </span>
-                </h1>
-                <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-secondary">
-                  {videos.length.toLocaleString()} walkthroughs pulled from {channelCount} creators —
-                  ranked, timestamped, and sorted the way you'd want them.
-                </p>
-              </div>
-
-              {/* Readout strip instead of flat stat cards */}
-              <div className="flex gap-6 border-t border-border pt-5 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
-                <div>
-                  <p className="font-mono text-[30px] font-bold leading-none tracking-tight text-primary">
-                    {videos.length.toLocaleString()}
-                  </p>
-                  <p className="mt-1.5 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-muted">
-                    Videos
-                  </p>
-                </div>
-                <div>
-                  <p className="font-mono text-[30px] font-bold leading-none tracking-tight text-primary">
-                    {channelCount}
-                  </p>
-                  <p className="mt-1.5 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-muted">
-                    Channels
-                  </p>
-                </div>
-                <div>
-                  <p className="font-mono text-[30px] font-bold leading-none tracking-tight text-primary">
-                    {formatCompact(totalViews)}
-                  </p>
-                  <p className="mt-1.5 font-mono text-[12px] font-medium uppercase tracking-[0.08em] text-muted">
-                    Total views
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {latest && (
-              <p className="mt-6 flex items-center gap-2 font-mono text-[13.5px] text-muted">
-                <span className="h-1 w-1 rounded-full bg-accent-hover" />
-                Newest: "{latest.title}" just landed from {latest.author.name}
-              </p>
-            )}
+        <div className="container pt-4">
+          <div className="flex items-center gap-1.5 font-mono text-[13.5px] text-muted">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0">
+              <path d="M2 4.2A1.2 1.2 0 0 1 3.2 3h6.6A1.2 1.2 0 0 1 11 4.2v7.6A1.2 1.2 0 0 1 9.8 13H3.2A1.2 1.2 0 0 1 2 11.8Z" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M11 6.3 14 4.5v7L11 9.7" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+            </svg>
+            <Link href="/" className="hover:text-secondary">Home</Link>
+            <span>&gt;</span>
+            <span className="text-secondary">Videos</span>
+            <span className="rounded bg-bg-hover px-1.5 py-[1px] text-[12px] text-muted">
+              {videos.length.toLocaleString()}
+            </span>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="container pb-24 pt-6">
-          <VideoTable videos={videos} />
+        <div className="container pb-24 pt-4">
+          <div className="rounded-lg border border-border bg-bg-elevated/60">
+            <div className="flex flex-col gap-4 border-b border-border px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2.5">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="none" className="shrink-0 text-primary">
+                  <rect x="1.5" y="3.5" width="9.5" height="9" rx="1.3" stroke="currentColor" strokeWidth="1.3" />
+                  <path d="M11 6.3 14.5 4v8L11 9.7Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+                </svg>
+                <h1 className="text-[22px] font-bold tracking-[-0.01em] text-primary">Videos</h1>
+              </div>
+
+              <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[13.5px] text-secondary">
+                <span className="text-muted">
+                  Videos <span className="font-semibold text-primary">{videos.length.toLocaleString()}</span>
+                </span>
+                <span className="text-muted">
+                  Channels <span className="font-semibold text-primary">{channelCount}</span>
+                </span>
+                <span className="text-muted">
+                  Views <span className="font-semibold text-primary">{totalViews.toLocaleString()}</span>
+                </span>
+              </div>
+            </div>
+
+            <VideoTable videos={videos} />
+          </div>
         </div>
       </main>
     </div>

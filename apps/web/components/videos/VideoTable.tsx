@@ -9,6 +9,22 @@ import { ThumbImage } from "./ThumbImage";
 type SortKey = "name" | "posted" | "views";
 type SortDir = "asc" | "desc";
 
+const LEVELS = ["Beginner", "Intermediate", "Advanced", "Expert"] as const;
+type Level = (typeof LEVELS)[number];
+
+const LEVEL_STYLES: Record<Level, string> = {
+  Beginner: "bg-success/10 text-success",
+  Intermediate: "bg-accent-soft text-accent-hover",
+  Advanced: "bg-amber-400/10 text-amber-400",
+  Expert: "bg-rose-400/10 text-rose-400",
+};
+
+function levelFor(id: string): Level {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return LEVELS[hash % LEVELS.length];
+}
+
 function formatPosted(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -23,6 +39,14 @@ function SortIcon() {
     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
       <path d="M4.5 6.5 8 3l3.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M4.5 9.5 8 13l3.5-3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FilterIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M2.5 4h11M4.5 8h7M7 12h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -61,7 +85,7 @@ export function VideoTable({ videos }: { videos: Video[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+      <table className="w-full min-w-[720px] border-collapse">
         <thead>
           <tr className="border-b border-border">
             {columns.map((col) => (
@@ -69,7 +93,7 @@ export function VideoTable({ videos }: { videos: Video[] }) {
                 key={col.key}
                 className={`select-none px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted ${
                   col.align === "right" ? "text-right" : ""
-                } ${col.key === "name" ? "pl-0" : ""}`}
+                } ${col.key === "name" ? "pl-4" : ""}`}
               >
                 <button
                   onClick={() => toggleSort(col.key)}
@@ -78,10 +102,17 @@ export function VideoTable({ videos }: { videos: Video[] }) {
                   } ${col.align === "right" ? "flex-row-reverse" : ""}`}
                 >
                   {col.label}
+                  {col.key === "name" && <FilterIcon />}
                   <SortIcon />
                 </button>
               </th>
             ))}
+            <th className="select-none px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
+              <span className="inline-flex items-center gap-1.5">
+                Level
+                <FilterIcon />
+              </span>
+            </th>
             <th className="px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
               Channel
             </th>
@@ -94,7 +125,7 @@ export function VideoTable({ videos }: { videos: Video[] }) {
               className="group relative border-b border-border/60 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:bg-bg-hover hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)]"
               style={{ ["--row-accent" as string]: v.accent }}
             >
-              <td className="relative py-3 pl-0 pr-4">
+              <td className="relative py-3 pl-4 pr-4">
                 <span className="absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-full bg-[var(--row-accent)] transition-all duration-200 group-hover:h-[70%]" />
                 <Link href={`/videos/${v.slug}`} className="flex items-center gap-3.5">
                   <span className="relative block h-[60px] w-[106px] shrink-0 overflow-hidden rounded-md bg-bg-elevated transition-transform duration-300 ease-out group-hover:scale-[1.04] group-hover:shadow-[0_0_0_1.5px_var(--row-accent)]">
@@ -128,6 +159,15 @@ export function VideoTable({ videos }: { videos: Video[] }) {
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-[13.5px] text-secondary">
                 {formatViewsCompact(v.views)}
+              </td>
+              <td className="whitespace-nowrap px-4 py-3">
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 font-mono text-[12px] font-semibold ${
+                    LEVEL_STYLES[levelFor(v.id)]
+                  }`}
+                >
+                  {levelFor(v.id)}
+                </span>
               </td>
               <td className="whitespace-nowrap px-4 py-3">
                 <Link
