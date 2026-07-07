@@ -1,0 +1,165 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Video, formatDuration, BLUR_DATA_URL } from "@/lib/video-types";
+import { ThumbImage } from "./ThumbImage";
+
+type SortKey = "name" | "posted" | "views";
+type SortDir = "asc" | "desc";
+
+function formatPosted(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function formatViewsCompact(n: number) {
+  return n.toLocaleString("en-US");
+}
+
+function SortIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M4.5 6.5 8 3l3.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.5 9.5 8 13l3.5-3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function VideoTable({ videos }: { videos: Video[] }) {
+  const [sortKey, setSortKey] = useState<SortKey>("posted");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
+
+  const sorted = useMemo(() => {
+    const copy = [...videos];
+    copy.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === "name") cmp = a.title.localeCompare(b.title);
+      else if (sortKey === "posted")
+        cmp = new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime();
+      else if (sortKey === "views") cmp = a.views - b.views;
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return copy;
+  }, [videos, sortKey, sortDir]);
+
+  const columns: { key: SortKey; label: string; align?: "right" }[] = [
+    { key: "name", label: "Name" },
+    { key: "posted", label: "Posted" },
+    { key: "views", label: "Views", align: "right" },
+  ];
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="border-b border-border">
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className={`select-none px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted ${
+                  col.align === "right" ? "text-right" : ""
+                } ${col.key === "name" ? "pl-0" : ""}`}
+              >
+                <button
+                  onClick={() => toggleSort(col.key)}
+                  className={`inline-flex items-center gap-1.5 transition-colors hover:text-secondary ${
+                    sortKey === col.key ? "text-secondary" : ""
+                  } ${col.align === "right" ? "flex-row-reverse" : ""}`}
+                >
+                  {col.label}
+                  <SortIcon />
+                </button>
+              </th>
+            ))}
+            <th className="px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
+              Channel
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((v) => (
+            <tr
+              key={v.id}
+              className="group relative border-b border-border/60 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:bg-bg-hover hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)]"
+              style={{ ["--row-accent" as string]: v.accent }}
+            >
+              <td className="relative py-3 pl-0 pr-4">
+                <span className="absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-full bg-[var(--row-accent)] transition-all duration-200 group-hover:h-[70%]" />
+                <Link href={`/videos/${v.slug}`} className="flex items-center gap-3.5">
+                  <span className="relative block h-[60px] w-[106px] shrink-0 overflow-hidden rounded-md bg-bg-elevated transition-transform duration-300 ease-out group-hover:scale-[1.04] group-hover:shadow-[0_0_0_1.5px_var(--row-accent)]">
+                    <ThumbImage
+                      src={v.thumbnail}
+                      alt=""
+                      toolName={v.toolName}
+                      accent={v.accent}
+                      sizes="106px"
+                    />
+                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/95 shadow-md">
+                        <svg width="11" height="11" viewBox="0 0 16 16" fill="#08090a">
+                          <path d="M3 1.7a.7.7 0 0 1 1.06-.6l10.6 6.3a.7.7 0 0 1 0 1.2L4.06 14.9A.7.7 0 0 1 3 14.3V1.7Z" />
+                        </svg>
+                      </span>
+                    </span>
+                    <span className="absolute bottom-1 right-1 z-10 flex items-center gap-1 rounded bg-black/75 px-1.5 py-[2px] text-[11px] font-medium text-white">
+                      {formatDuration(v.durationSeconds)}
+                    </span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="line-clamp-2 text-[15px] font-medium leading-snug text-primary transition-colors group-hover:text-[var(--row-accent)]">
+                      {v.title}
+                    </span>
+                  </span>
+                </Link>
+              </td>
+              <td className="whitespace-nowrap px-4 py-3 font-mono text-[13.5px] text-secondary">
+                {formatPosted(v.publishedAt)}
+              </td>
+              <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-[13.5px] text-secondary">
+                {formatViewsCompact(v.views)}
+              </td>
+              <td className="whitespace-nowrap px-4 py-3">
+                <Link
+                  href={`/videos?channel=${encodeURIComponent(v.toolName)}`}
+                  className="flex items-center gap-2.5"
+                >
+                  <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bg-hover ring-1 ring-transparent transition-all duration-200 group-hover:ring-[var(--row-accent)]">
+                    {v.author.avatar?.startsWith("http") || v.author.avatar?.startsWith("/") ? (
+                      <Image
+                        src={v.author.avatar}
+                        alt=""
+                        fill
+                        sizes="28px"
+                        placeholder="blur"
+                        blurDataURL={BLUR_DATA_URL}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span className="font-mono text-[11px] font-semibold text-secondary">
+                        {v.author.avatar || v.author.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-[13.5px] font-medium text-secondary transition-colors group-hover:text-primary">
+                    {v.author.name}
+                  </span>
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
