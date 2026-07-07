@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { VideoTable } from "@/components/videos/VideoTable";
-import { Sidebar } from "@/components/videos/SIdebar";
-import { Topbar } from "@/components/videos/Topbar";
+import { VideosShell } from "@/components/videos/Videosshell";
 import { getAllVideos } from "@/lib/videos-data";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +13,7 @@ export default async function VideosPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <Sidebar />
-      <Topbar />
-
-      <main className="pt-[60px] sm:pl-[64px]">
+      <VideosShell>
         <div className="container pt-4">
           <div className="flex items-center gap-1.5 font-mono text-[13.5px] text-muted">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0">
@@ -60,7 +56,7 @@ export default async function VideosPage() {
             <VideoTable videos={videos} />
           </div>
         </div>
-      </main>
+      </VideosShell>
     </div>
   );
 }

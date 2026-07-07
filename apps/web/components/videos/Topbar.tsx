@@ -3,13 +3,22 @@
 import { useState } from "react";
 import Link from "next/link";
 
-export function Topbar() {
+export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [freeMode, setFreeMode] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-20 border-b border-border bg-bg/80 backdrop-blur-xl sm:left-[64px]">
-      <div className="flex h-[60px] items-center justify-between gap-4 px-4 sm:px-6">
-        <div className="flex items-center gap-2">
+    <header className="fixed inset-x-0 top-0 z-20 border-b border-border bg-navbar/90 backdrop-blur-xl sm:left-[64px]">
+      <div className="flex h-[60px] items-center justify-between gap-2 px-3 sm:gap-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            onClick={onMenuClick}
+            aria-label="Toggle menu"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-secondary transition-colors hover:bg-bg-hover hover:text-primary sm:hidden"
+          >
+            <svg width="17" height="17" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </button>
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="hidden shrink-0 text-muted sm:block">
             <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -53,7 +62,7 @@ export function Topbar() {
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <button className="hidden items-center gap-2 rounded-full border border-border bg-bg-elevated px-3 py-1.5 text-secondary transition-colors hover:border-border-strong hover:text-primary md:flex">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
               <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" />
@@ -62,12 +71,12 @@ export function Topbar() {
             <span className="font-mono text-[14px]">Search</span>
             <span className="ml-3 rounded border border-border px-1 py-0.5 font-mono text-[11.5px] text-muted">Ctrl + K</span>
           </button>
-          <Link href="#" className="hidden font-mono text-[14px] font-medium text-secondary transition-colors hover:text-primary sm:inline">
+          <Link href="#" className="whitespace-nowrap font-mono text-[13px] font-medium text-secondary transition-colors hover:text-primary sm:text-[14px]">
             Log in
           </Link>
           <Link
             href="#"
-            className="rounded-full bg-success px-4 py-1.5 font-mono text-[14px] font-semibold text-[#062018] transition-colors hover:brightness-110"
+            className="whitespace-nowrap rounded-full bg-success px-3 py-1.5 font-mono text-[13px] font-semibold text-[#0d1f17] transition-colors hover:brightness-110 sm:px-4 sm:text-[14px]"
           >
             Sign up
           </Link>

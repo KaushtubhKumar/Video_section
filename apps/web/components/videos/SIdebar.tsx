@@ -22,33 +22,61 @@ const NAV_FOOTER = [
   { label: "Contact us", href: "#", path: "M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12ZM8 11v.01M8 5.5a1.6 1.6 0 0 1 1.6 1.6c0 1.1-1.6 1.1-1.6 2.4" },
 ];
 
-export function Sidebar() {
+export function Sidebar({
+  isOpen = false,
+  onClose,
+}: {
+  isOpen?: boolean;
+  onClose?: () => void;
+}) {
   const [freeMode, setFreeMode] = useState(false);
 
   return (
-    <aside className="group fixed inset-y-0 left-0 z-30 hidden w-[64px] flex-col overflow-hidden border-r border-border bg-bg-elevated/90 backdrop-blur-xl transition-[width] duration-300 ease-out hover:w-[240px] hover:shadow-[8px_0_32px_rgba(0,0,0,0.45)] sm:flex">
-      <div className="flex h-[60px] w-full shrink-0 items-center gap-2 border-b border-border px-[15px]">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 text-muted">
-          <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <span className="whitespace-nowrap font-mono text-[13.5px] text-secondary opacity-0 transition-opacity delay-100 duration-200 group-hover:opacity-100">
-          Free mode
-        </span>
-        <button
-          onClick={() => setFreeMode((v) => !v)}
-          className={`relative ml-auto h-5 w-9 shrink-0 rounded-full opacity-0 transition-opacity delay-100 duration-200 group-hover:opacity-100 ${
-            freeMode ? "bg-accent" : "bg-bg-hover"
-          }`}
-        >
-          <span
-            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-              freeMode ? "translate-x-[18px]" : "translate-x-0.5"
-            }`}
-          />
-        </button>
-      </div>
+    <>
+      {isOpen && (
+        <div
+          onClick={onClose}
+          aria-hidden="true"
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-[2px] sm:hidden"
+        />
+      )}
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto py-4">
+      <aside
+        className={`group fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col overflow-hidden border-r border-border bg-sidebar shadow-[0_1px_2px_rgba(0,0,0,0.35),0_8px_24px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-out sm:z-30 sm:w-[64px] sm:translate-x-0 sm:bg-sidebar/95 sm:backdrop-blur-xl sm:duration-300 sm:hover:w-[240px] sm:hover:shadow-[0_1px_2px_rgba(0,0,0,0.35),0_8px_24px_rgba(0,0,0,0.25)] ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex h-[60px] w-full shrink-0 items-center gap-2 border-b border-border px-[15px]">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 text-muted">
+            <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="whitespace-nowrap font-mono text-[13.5px] text-secondary opacity-100 transition-opacity delay-100 duration-200 sm:opacity-0 sm:group-hover:opacity-100">
+            Free mode
+          </span>
+          <button
+            onClick={() => setFreeMode((v) => !v)}
+            className={`relative ml-auto h-5 w-9 shrink-0 rounded-full opacity-100 transition-opacity delay-100 duration-200 sm:opacity-0 sm:group-hover:opacity-100 ${
+              freeMode ? "bg-accent" : "bg-bg-hover"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
+                freeMode ? "translate-x-[18px]" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-bg-hover hover:text-primary sm:hidden"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M3 3l10 10M13 3 3 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto py-4">
         {NAV_ICONS.map((item) => (
           <Link
             key={item.label}
@@ -66,7 +94,7 @@ export function Sidebar() {
             <svg width="18" height="18" viewBox="0 0 16 16" fill="none" className="shrink-0">
               <path d={item.path} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="whitespace-nowrap text-[14px] font-medium opacity-0 transition-opacity delay-100 duration-200 group-hover:opacity-100">
+            <span className="whitespace-nowrap text-[14px] font-medium opacity-100 transition-opacity delay-100 duration-200 sm:opacity-0 sm:group-hover:opacity-100">
               {item.label}
             </span>
           </Link>
@@ -84,7 +112,7 @@ export function Sidebar() {
             <svg width="18" height="18" viewBox="0 0 16 16" fill="none" className="shrink-0">
               <path d={item.path} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-[14px] font-medium opacity-0 transition-opacity delay-100 duration-200 group-hover:opacity-100">
+            <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-[14px] font-medium opacity-100 transition-opacity delay-100 duration-200 sm:opacity-0 sm:group-hover:opacity-100">
               {item.label}
               {item.external && (
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" className="shrink-0">
@@ -94,7 +122,8 @@ export function Sidebar() {
             </span>
           </Link>
         ))}
-      </nav>
-    </aside>
+        </nav>
+      </aside>
+    </>
   );
 }

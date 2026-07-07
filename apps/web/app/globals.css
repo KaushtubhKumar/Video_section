@@ -5,15 +5,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 :root {
-  --bg: #08090a;
-  --bg-elevated: #0d0e10;
-  --bg-hover: #131417;
-  --surface: #111214;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --text-primary: #edeef0;
-  --text-secondary: #9a9ba1;
-  --text-muted: #63646b;
+  --bg: #2c2d39;
+  --bg-elevated: #343543;
+  --bg-hover: #3a3b49;
+  --surface: #343543;
+  --sidebar: #272833;
+  --navbar: #2a2b37;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.11);
+  --text-primary: #f2f3f6;
+  --text-secondary: #c4c7d2;
+  --text-muted: #989ba8;
+  --text-disabled: #727583;
   --accent: #5e6ad2;
   --accent-soft: rgba(94, 106, 210, 0.14);
   --accent-hover: #7078e0;
@@ -35,6 +38,7 @@ html,
 body {
   padding: 0;
   margin: 0;
+  overflow-x: hidden;
   background: var(--bg);
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -67,8 +71,12 @@ button {
 }
 
 .noise-bg {
-  background-image: radial-gradient(circle at 20% -10%, rgba(94, 106, 210, 0.12), transparent 45%),
-    radial-gradient(circle at 100% 0%, rgba(94, 106, 210, 0.06), transparent 40%);
+  background-image: radial-gradient(circle at 20% -10%, rgba(94, 106, 210, 0.1), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(94, 106, 210, 0.05), transparent 40%);
+}
+
+.elevation {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
 .visually-hidden {

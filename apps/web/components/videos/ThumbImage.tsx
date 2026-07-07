@@ -48,7 +48,7 @@ export function ThumbImage({
   return (
     <>
       {status === "loading" && (
-        <div className="absolute inset-0 animate-shimmer bg-[linear-gradient(110deg,#111214_8%,#1a1b1f_18%,#111214_33%)] bg-[length:200%_100%]" />
+        <div className="absolute inset-0 animate-shimmer bg-[linear-gradient(110deg,#2c2d39_8%,#3a3b49_18%,#2c2d39_33%)] bg-[length:200%_100%]" />
       )}
       <Image
         src={src}

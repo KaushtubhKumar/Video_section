@@ -87,7 +87,7 @@ export function VideoTable({ videos }: { videos: Video[] }) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-[720px] border-collapse">
         <thead>
-          <tr className="border-b border-border">
+          <tr className="border-b border-white/[0.05]">
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -122,7 +122,7 @@ export function VideoTable({ videos }: { videos: Video[] }) {
           {sorted.map((v) => (
             <tr
               key={v.id}
-              className="group relative border-b border-border/60 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:bg-bg-hover hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)]"
+              className="group relative border-b border-white/[0.03] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:bg-bg-hover hover:shadow-[0_1px_2px_rgba(0,0,0,0.35),0_8px_24px_rgba(0,0,0,0.18)]"
               style={{ ["--row-accent" as string]: v.accent }}
             >
               <td className="relative py-3 pl-4 pr-4">
