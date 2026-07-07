@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { VideoTable } from "@/components/videos/VideoTable";
-import { VideosShell } from "@/components/videos/Videosshell";
+import { VideosShell } from "@/components/videos/VideosShell";
 import { getAllVideos } from "@/lib/videos-data";
 
 export const dynamic = "force-dynamic";
