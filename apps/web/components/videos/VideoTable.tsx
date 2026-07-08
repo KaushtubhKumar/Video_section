@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Video, formatDuration, BLUR_DATA_URL } from "@/lib/video-types";
+import { Video, formatDuration } from "@/lib/video-types";
 import { ThumbImage } from "./ThumbImage";
 
 type SortKey = "name" | "posted" | "views";
@@ -178,31 +177,14 @@ export function VideoTable({ videos }: { videos: Video[] }) {
                 </span>
               </td>
               <td className="whitespace-nowrap px-4 py-[9.6px]">
-                <Link
-                  href={`/videos?channel=${encodeURIComponent(v.toolName)}`}
-                  className="flex items-center gap-2.5"
-                >
-                  <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-bg-hover ring-1 ring-transparent transition-all duration-200 group-hover:ring-[var(--row-accent)]">
-                    {v.author.avatar?.startsWith("http") || v.author.avatar?.startsWith("/") ? (
-                      <Image
-                        src={v.author.avatar}
-                        alt=""
-                        fill
-                        sizes="28px"
-                        placeholder="blur"
-                        blurDataURL={BLUR_DATA_URL}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <span className="font-mono text-[11px] font-semibold text-secondary">
-                        {v.author.avatar || v.author.name.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-[13.5px] font-medium text-secondary transition-colors group-hover:text-primary">
-                    {v.author.name}
-                  </span>
-                </Link>
+<Link
+  href={`/videos?channel=${encodeURIComponent(v.toolName)}`}
+  className="flex items-center gap-2.5"
+>
+  <span className="text-[13.5px] font-medium text-secondary transition-colors group-hover:text-primary">
+    {v.author.name}
+  </span>
+</Link>
               </td>
             </tr>
           ))}
