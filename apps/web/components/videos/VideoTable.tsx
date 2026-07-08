@@ -91,7 +91,7 @@ export function VideoTable({ videos }: { videos: Video[] }) {
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`select-none px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted ${
+                className={`select-none px-4 py-[9.6px] text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted ${
                   col.align === "right" ? "text-right" : ""
                 } ${col.key === "name" ? "pl-4" : ""}`}
               >
@@ -107,13 +107,16 @@ export function VideoTable({ videos }: { videos: Video[] }) {
                 </button>
               </th>
             ))}
-            <th className="select-none px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
+            <th className="select-none px-4 py-[9.6px] text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
               <span className="inline-flex items-center gap-1.5">
                 Level
                 <FilterIcon />
               </span>
             </th>
-            <th className="px-4 py-3 text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
+            <th className="px-4 py-[9.6px] text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
+              Category
+            </th>
+            <th className="px-4 py-[9.6px] text-left font-mono text-[12.5px] font-semibold uppercase tracking-[0.08em] text-muted">
               Channel
             </th>
           </tr>
@@ -125,10 +128,10 @@ export function VideoTable({ videos }: { videos: Video[] }) {
               className="group relative border-b border-white/[0.03] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:bg-bg-hover hover:shadow-[0_1px_2px_rgba(0,0,0,0.35),0_8px_24px_rgba(0,0,0,0.18)]"
               style={{ ["--row-accent" as string]: v.accent }}
             >
-              <td className="relative py-3 pl-4 pr-4">
+              <td className="relative py-[9.6px] pl-4 pr-4">
                 <span className="absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-full bg-[var(--row-accent)] transition-all duration-200 group-hover:h-[70%]" />
                 <Link href={`/videos/${v.slug}`} className="flex items-center gap-3.5">
-                  <span className="relative block h-[60px] w-[106px] shrink-0 overflow-hidden rounded-md bg-bg-elevated transition-transform duration-300 ease-out group-hover:scale-[1.04] group-hover:shadow-[0_0_0_1.5px_var(--row-accent)]">
+                  <span className="relative block h-[48px] w-[85px] shrink-0 overflow-hidden rounded-none bg-bg-elevated transition-transform duration-300 ease-out group-hover:scale-[1.04] group-hover:shadow-[0_0_0_1.5px_var(--row-accent)]">
                     <ThumbImage
                       src={v.thumbnail}
                       alt=""
@@ -154,13 +157,13 @@ export function VideoTable({ videos }: { videos: Video[] }) {
                   </span>
                 </Link>
               </td>
-              <td className="whitespace-nowrap px-4 py-3 font-mono text-[13.5px] text-secondary">
+              <td className="whitespace-nowrap px-4 py-[9.6px] font-mono text-[13.5px] text-secondary">
                 {formatPosted(v.publishedAt)}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-[13.5px] text-secondary">
+              <td className="whitespace-nowrap px-4 py-[9.6px] text-right font-mono text-[13.5px] text-secondary">
                 {formatViewsCompact(v.views)}
               </td>
-              <td className="whitespace-nowrap px-4 py-3">
+              <td className="whitespace-nowrap px-4 py-[9.6px]">
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-1 font-mono text-[12px] font-semibold ${
                     LEVEL_STYLES[levelFor(v.id)]
@@ -169,7 +172,12 @@ export function VideoTable({ videos }: { videos: Video[] }) {
                   {levelFor(v.id)}
                 </span>
               </td>
-              <td className="whitespace-nowrap px-4 py-3">
+              <td className="whitespace-nowrap px-4 py-[9.6px]">
+                <span className="inline-flex items-center rounded-full border border-border px-2.5 py-1 font-mono text-[12px] font-medium text-secondary">
+                  {v.toolCategory}
+                </span>
+              </td>
+              <td className="whitespace-nowrap px-4 py-[9.6px]">
                 <Link
                   href={`/videos?channel=${encodeURIComponent(v.toolName)}`}
                   className="flex items-center gap-2.5"

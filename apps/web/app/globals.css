@@ -5,21 +5,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 :root {
-  --bg: #2c2d39;
-  --bg-elevated: #343543;
-  --bg-hover: #3a3b49;
-  --surface: #343543;
-  --sidebar: #272833;
-  --navbar: #2a2b37;
+  --bg: #0a0a0c;
+  --bg-elevated: #131316;
+  --bg-hover: #1a1a1d;
+  --surface: #111113;
+  --sidebar: #09090b;
+  --navbar: #0b0b0d;
   --border: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.11);
-  --text-primary: #f2f3f6;
-  --text-secondary: #c4c7d2;
-  --text-muted: #989ba8;
-  --text-disabled: #727583;
+  --border-strong: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
+  --text-disabled: #6b6b70;
   --accent: #5e6ad2;
   --accent-soft: rgba(94, 106, 210, 0.14);
-  --accent-hover: #7078e0;
+  --accent-hover: #7c88f5;
   --danger: #eb5757;
   --success: #4cb782;
   --radius-sm: 6px;
@@ -43,6 +43,33 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Cinematic ambient lighting: faint top-center glow + edge vignette, grayscale-first */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 900px 480px at 50% -6%, rgba(94, 106, 210, 0.13), transparent 65%),
+    radial-gradient(ellipse 1200px 700px at 50% 0%, rgba(255, 255, 255, 0.025), transparent 60%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 180px rgba(0, 0, 0, 0.5);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 a {
@@ -71,8 +98,8 @@ button {
 }
 
 .noise-bg {
-  background-image: radial-gradient(circle at 20% -10%, rgba(94, 106, 210, 0.1), transparent 45%),
-    radial-gradient(circle at 100% 0%, rgba(94, 106, 210, 0.05), transparent 40%);
+  background-image: radial-gradient(circle at 50% -10%, rgba(94, 106, 210, 0.1), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.02), transparent 40%);
 }
 
 .elevation {

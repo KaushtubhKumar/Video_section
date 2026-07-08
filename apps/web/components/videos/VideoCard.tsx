@@ -40,7 +40,7 @@ export function VideoCard({
           className="absolute left-0 top-1/2 h-0 w-[3px] -translate-y-1/2 rounded-full transition-all duration-200 group-hover:h-[70%]"
           style={{ background: video.accent }}
         />
-        <div className="relative w-28 shrink-0 overflow-hidden rounded-lg aspect-video bg-bg-elevated sm:w-40">
+        <div className="relative w-[90px] shrink-0 overflow-hidden rounded-none aspect-video bg-bg-elevated sm:w-32">
           <ThumbImage
             src={video.thumbnail}
             alt=""
@@ -85,7 +85,7 @@ export function VideoCard({
         className="group relative block"
         style={{ ["--tool-accent" as string]: video.accent }}
       >
-        <div className="relative overflow-hidden rounded-card border border-border bg-bg-elevated aspect-video">
+        <div className="relative overflow-hidden rounded-none border border-border bg-bg-elevated aspect-video">
           <ThumbImage
             src={video.thumbnail}
             alt=""
@@ -96,7 +96,7 @@ export function VideoCard({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           <div
-            className="pointer-events-none absolute inset-0 rounded-card opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="pointer-events-none absolute inset-0 rounded-none opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             style={{
               boxShadow: `inset 0 0 0 1.5px ${video.accent}b3, 0 16px 36px -16px ${video.accent}66`,
             }}
@@ -123,7 +123,7 @@ export function VideoCard({
             </span>
           </span>
         </div>
-        <div className="mt-3 flex gap-3">
+        <div className="mt-[9.6px] flex gap-[9.6px]">
           <div
             className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
             style={{ background: `${video.accent}26`, color: video.accent }}
@@ -155,7 +155,7 @@ export function VideoCard({
           }}
         >
           <Link href={`/videos/${video.slug}`} className="block">
-            <div className="relative overflow-hidden rounded-t-card aspect-video">
+            <div className="relative overflow-hidden rounded-none aspect-video">
               <ThumbImage
                 src={video.thumbnail}
                 alt=""
@@ -175,7 +175,7 @@ export function VideoCard({
               </span>
             </div>
           </Link>
-          <div className="p-4">
+          <div className="p-[12.8px]">
             <div
               className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.05em]"
               style={{ color: video.accent }}
@@ -190,7 +190,7 @@ export function VideoCard({
             <p className="mt-2 line-clamp-2 text-[12.5px] leading-relaxed text-secondary">
               {video.description}
             </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-[9.6px] flex flex-wrap gap-1.5">
               {video.tags.slice(0, 3).map((t) => (
                 <span
                   key={t}
@@ -200,7 +200,7 @@ export function VideoCard({
                 </span>
               ))}
             </div>
-            <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+            <div className="mt-[9.6px] flex items-center justify-between border-t border-border pt-[9.6px]">
               <span className="text-[12px] text-muted">
                 <span className="font-mono">{formatViews(video.views)}</span> ·{" "}
                 {formatRelativeDate(video.publishedAt)}
