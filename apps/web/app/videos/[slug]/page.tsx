@@ -10,10 +10,18 @@ export default async function VideoDetailsPage({ params }: { params: { slug: str
   if (!video) notFound();
 
   return (
-    <main className="flex h-[100dvh] items-center justify-center overflow-hidden bg-[#050506] p-4">
+    <main className="flex h-[100dvh] items-center justify-center overflow-hidden bg-[#050506]">
+      {/*
+        Width-first layout: the card's width is a fixed share of the viewport
+        (81vw) and is never derived from available height. The player inside
+        is width-driven too (aspect-ratio: 16/9), so its height always
+        follows its width — it never gets squeezed, cropped, or clipped by
+        the surrounding chrome. The card is simply centered, with equal
+        margin left and right, and never touches the viewport edges.
+      */}
       <div
         className="flex flex-col rounded-[22px] border border-white/[0.07] bg-[#0d0d10] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.7)]"
-        style={{ maxWidth: "min(94vw, 1600px)", maxHeight: "100%" }}
+        style={{ width: "81vw" }}
       >
         {/* Title bar */}
         <div className="flex h-14 shrink-0 items-center justify-between gap-4 px-5 sm:px-7">
@@ -31,9 +39,9 @@ export default async function VideoDetailsPage({ params }: { params: { slug: str
           </Link>
         </div>
 
-        {/* Player — height-bound first, width follows 16:9, so it always fits between the bars */}
-        <div className="min-h-0 flex-1 px-3 sm:px-4">
-          <div className="relative mx-auto h-full max-w-full" style={{ aspectRatio: "16 / 9" }}>
+        {/* Player — width-bound (81vw, from the card), height derives from 16:9 */}
+        <div className="px-3 sm:px-4">
+          <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
             <VideoPlayer youtubeId={video.youtubeId} title={video.title} />
           </div>
         </div>

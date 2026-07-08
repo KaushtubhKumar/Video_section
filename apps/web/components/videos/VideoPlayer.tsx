@@ -19,7 +19,7 @@ export function VideoPlayer({
   title: string;
 }) {
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl bg-black">
+    <div className="relative h-full w-full overflow-hidden rounded-[18px] bg-black">
       <iframe
         className="absolute inset-0 h-full w-full"
         src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&modestbranding=1`}
