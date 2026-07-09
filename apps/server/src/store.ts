@@ -25,6 +25,7 @@ export async function upsertVideos(incoming: Video[]): Promise<number> {
     data: v,
     views: v.views,
     published_at: v.publishedAt,
+    tool_category: v.toolCategory,
   }));
 
   const { error } = await client().from("videos").upsert(rows, { onConflict: "youtube_id" });
@@ -41,24 +42,4 @@ export async function getKnownYoutubeIds(): Promise<Set<string>> {
     return new Set();
   }
   return new Set((data ?? []).map((row: any) => row.youtube_id as string));
-}
-
-export async function readChannelIdCache(): Promise<Record<string, string>> {
-  const { data, error } = await client().from("channel_ids").select("channel_key, youtube_channel_id");
-  if (error) {
-    console.error("[store] readChannelIdCache failed:", error.message);
-    return {};
-  }
-  const cache: Record<string, string> = {};
-  for (const row of data ?? []) cache[row.channel_key] = row.youtube_channel_id;
-  return cache;
-}
-
-export async function writeChannelIdCache(cache: Record<string, string>): Promise<void> {
-  const rows = Object.entries(cache).map(([channel_key, youtube_channel_id]) => ({
-    channel_key,
-    youtube_channel_id,
-  }));
-  const { error } = await client().from("channel_ids").upsert(rows, { onConflict: "channel_key" });
-  if (error) console.error("[store] writeChannelIdCache failed:", error.message);
 }

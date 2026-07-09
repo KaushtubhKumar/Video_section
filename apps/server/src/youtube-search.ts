@@ -1,0 +1,95 @@
+const API_BASE = "https://www.googleapis.com/youtube/v3";
+
+/**
+ * No channel whitelist. Discovery is keyword-driven — anything on YouTube
+ * matching these AI-related queries is a candidate. New creators/channels
+ * surface automatically as they publish relevant content; nothing here
+ * needs to be updated when a new channel starts posting AI content.
+ *
+ * Override at runtime with YOUTUBE_SEARCH_QUERIES="q1|q2|q3" (pipe-separated)
+ * without a code change/redeploy.
+ */
+const DEFAULT_QUERIES = [
+  "multimodal AI",
+  "vision language model",
+  "text to video AI",
+  "AI image generation model",
+  "any-to-any model AI",
+  "large language model",
+  "AI agent",
+  "autonomous agents AI",
+  "new AI model release",
+  "open source AI model",
+];
+
+function getQueries(): string[] {
+  const override = process.env.YOUTUBE_SEARCH_QUERIES;
+  if (override && override.trim().length > 0) {
+    return override.split("|").map((q) => q.trim()).filter(Boolean);
+  }
+  return DEFAULT_QUERIES;
+}
+
+function apiKey() {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (!key) throw new Error("YOUTUBE_API_KEY is not set");
+  return key;
+}
+
+/** How far back to search on each run. Keeps the pool fresh + bounded. */
+function publishedAfterIso(): string {
+  const days = Number(process.env.PUBLISHED_AFTER_DAYS ?? 14);
+  return new Date(Date.now() - days * 86400000).toISOString();
+}
+
+export type DiscoveredVideo = { videoId: string; publishedAt: string };
+
+/**
+ * Open crawl of YouTube via the Data API's search.list, across the whole
+ * platform — not limited to any fixed channel list. Replaces the old
+ * "only these 14 channels" model with "anything matching these AI terms".
+ */
+export async function discoverVideos(): Promise<DiscoveredVideo[]> {
+  const key = apiKey();
+  const publishedAfter = publishedAfterIso();
+  const seen = new Map<string, DiscoveredVideo>();
+
+  for (const q of getQueries()) {
+    let pageToken: string | undefined;
+    let pagesFetched = 0;
+    const maxPages = Number(process.env.YOUTUBE_SEARCH_MAX_PAGES ?? 1); // 1 page (~25 results) per query by default
+
+    do {
+      const params = new URLSearchParams({
+        part: "snippet",
+        type: "video",
+        order: "date",
+        maxResults: "25",
+        q,
+        publishedAfter,
+        key,
+      });
+      if (pageToken) params.set("pageToken", pageToken);
+
+      const url = `${API_BASE}/search?${params.toString()}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.error(`[youtube-search] search.list failed for "${q}": ${res.status}`);
+        break;
+      }
+      const json = await res.json();
+
+      for (const item of json.items ?? []) {
+        const id = item.id?.videoId;
+        if (id && !seen.has(id)) {
+          seen.set(id, { videoId: id, publishedAt: item.snippet.publishedAt });
+        }
+      }
+
+      pageToken = json.nextPageToken;
+      pagesFetched += 1;
+    } while (pageToken && pagesFetched < maxPages);
+  }
+
+  return [...seen.values()];
+}

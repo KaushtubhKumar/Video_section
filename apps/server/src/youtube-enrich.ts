@@ -1,6 +1,4 @@
-import type { Video } from "@video-module/shared";
-import type { ChannelConfig } from "@video-module/shared";
-import { readChannelIdCache, writeChannelIdCache } from "./store";
+import type { Video, ToolCategory } from "@video-module/shared";
 
 const API_BASE = "https://www.googleapis.com/youtube/v3";
 
@@ -8,29 +6,6 @@ function apiKey() {
   const key = process.env.YOUTUBE_API_KEY;
   if (!key) throw new Error("YOUTUBE_API_KEY is not set");
   return key;
-}
-
-export async function resolveChannelIds(channels: ChannelConfig[]): Promise<Record<string, string>> {
-  const cache = await readChannelIdCache();
-  const missing = channels.filter((c) => !cache[c.id]);
-
-  for (const channel of missing) {
-    const url = `${API_BASE}/channels?part=id&forHandle=${encodeURIComponent(
-      channel.handle
-    )}&key=${apiKey()}`;
-    const res = await fetch(url);
-    const json = await res.json();
-
-    const channelId = json?.items?.[0]?.id;
-    if (!channelId) {
-      console.error(`[youtube] could not resolve handle ${channel.handle} — check it's correct/still exists`);
-      continue;
-    }
-    cache[channel.id] = channelId;
-  }
-
-  if (missing.length > 0) await writeChannelIdCache(cache);
-  return cache;
 }
 
 function parseIsoDuration(iso: string): number {
@@ -56,11 +31,16 @@ function accentFor(videoId: string) {
   return ACCENTS[hash % ACCENTS.length];
 }
 
+/**
+ * Turns discovered + LLM-classified video IDs into full metadata records.
+ * Unlike the old channel-based version, the source of truth for a video's
+ * category is whatever relevance-gate.ts assigned it — not a channel config.
+ */
 export async function enrichVideos(
-  videoIds: string[],
-  channelMeta: { channelYoutubeId: string; channelName: string; category: string }[]
+  gated: { videoId: string; toolCategory: ToolCategory }[]
 ): Promise<Video[]> {
-  const channelByYoutubeId = new Map(channelMeta.map((c) => [c.channelYoutubeId, c]));
+  const categoryByVideoId = new Map(gated.map((g) => [g.videoId, g.toolCategory]));
+  const videoIds = gated.map((g) => g.videoId);
   const results: Video[] = [];
 
   const batches: string[][] = [];
@@ -74,23 +54,23 @@ export async function enrichVideos(
     )}&key=${apiKey()}`;
     const res = await fetch(url);
     if (!res.ok) {
-      console.error(`[youtube] videos.list failed: ${res.status}`);
+      console.error(`[youtube-enrich] videos.list failed: ${res.status}`);
       continue;
     }
     const json = await res.json();
 
     for (const item of json.items ?? []) {
-      const channel = channelByYoutubeId.get(item.snippet.channelId);
       const title: string = item.snippet.title;
       const videoId: string = item.id;
+      const toolCategory = categoryByVideoId.get(videoId) ?? "general-ai";
 
       results.push({
         id: videoId,
         slug: slugify(title, videoId),
         title,
         description: item.snippet.description ?? "",
-        toolName: channel?.channelName ?? item.snippet.channelTitle,
-        toolCategory: channel?.category ?? "AI",
+        toolName: item.snippet.channelTitle,
+        toolCategory,
         youtubeId: videoId,
         thumbnail:
           item.snippet.thumbnails?.maxres?.url ??
@@ -101,7 +81,7 @@ export async function enrichVideos(
         likes: Number(item.statistics?.likeCount ?? 0),
         publishedAt: item.snippet.publishedAt.slice(0, 10),
         author: { name: item.snippet.channelTitle, avatar: item.snippet.channelTitle.slice(0, 2).toUpperCase() },
-        tags: [channel?.category ?? "ai"],
+        tags: [toolCategory],
         accent: accentFor(videoId),
       });
     }
