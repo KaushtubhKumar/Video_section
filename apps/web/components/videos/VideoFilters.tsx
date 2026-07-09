@@ -1,30 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { TOOL_CATEGORIES, CATEGORY_LABELS, CATEGORY_COLORS, type ToolCategory } from "@video-module/shared";
 
-const categories = [
-  "All",
-  "Developer Tools",
-  "Video Generation",
-  "Image Generation",
-  "Audio",
-  "Productivity",
-  "Research",
-];
+const categories: ("All" | ToolCategory)[] = ["All", ...TOOL_CATEGORIES];
 
 const DEFAULT_COLOR = "#5e6ad2";
 
 export function VideoFilters({
-  categoryColors = {},
   onChange,
 }: {
-  categoryColors?: Record<string, string>;
-  onChange?: (state: { category: string; query: string }) => void;
+  onChange?: (state: { category: "All" | ToolCategory; query: string }) => void;
 }) {
-  const [active, setActive] = useState("All");
+  const [active, setActive] = useState<"All" | ToolCategory>("All");
   const [query, setQuery] = useState("");
 
-  function update(next: { category?: string; query?: string }) {
+  function update(next: { category?: "All" | ToolCategory; query?: string }) {
     const category = next.category ?? active;
     const q = next.query ?? query;
     if (next.category) setActive(next.category);
@@ -36,7 +27,8 @@ export function VideoFilters({
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none]">
         {categories.map((c) => {
-          const color = c === "All" ? DEFAULT_COLOR : categoryColors[c] ?? DEFAULT_COLOR;
+          const color = c === "All" ? DEFAULT_COLOR : CATEGORY_COLORS[c];
+          const label = c === "All" ? "All" : CATEGORY_LABELS[c];
           const isActive = active === c;
           return (
             <button
@@ -68,7 +60,7 @@ export function VideoFilters({
                   style={{ background: color }}
                 />
               )}
-              {c}
+              {label}
             </button>
           );
         })}

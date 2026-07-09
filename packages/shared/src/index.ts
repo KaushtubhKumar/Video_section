@@ -4,7 +4,7 @@ export type Video = {
   title: string;
   description: string;
   toolName: string;
-  toolCategory: string;
+  toolCategory: ToolCategory;
   youtubeId: string;
   thumbnail: string;
   durationSeconds: number;
@@ -17,15 +17,38 @@ export type Video = {
   accent: string;
 };
 
-export type ChannelCategory = "official-lab" | "research" | "news" | "tools";
+/**
+ * Categories are now assigned by the LLM relevance gate (see
+ * apps/server/src/relevance-gate.ts), not by a static channel whitelist.
+ * "not-ai" is used internally to drop irrelevant videos and is never
+ * persisted — it never reaches the frontend.
+ */
+export const TOOL_CATEGORIES = [
+  "multimodal-ai",
+  "llm",
+  "agents",
+  "robotics",
+  "general-ai",
+] as const;
 
-export type ChannelConfig = {
-  /** Stable internal id used as a DB/join key */
-  id: string;
-  /** YouTube @handle — resolved to a channel_id (UC...) on first ingest run */
-  handle: string;
-  name: string;
-  category: ChannelCategory;
+export type ToolCategory = (typeof TOOL_CATEGORIES)[number];
+
+/** Human-readable labels for category chips/badges in the UI. */
+export const CATEGORY_LABELS: Record<ToolCategory, string> = {
+  "multimodal-ai": "Multimodal AI",
+  llm: "LLM",
+  agents: "Agents",
+  robotics: "Robotics",
+  "general-ai": "General AI",
+};
+
+/** Deterministic accent colors per category, used for filter chips/badges. */
+export const CATEGORY_COLORS: Record<ToolCategory, string> = {
+  "multimodal-ai": "#5e6ad2",
+  llm: "#1d9e75",
+  agents: "#d4537e",
+  robotics: "#ba7517",
+  "general-ai": "#378add",
 };
 
 /** 8x8 solid-gray base64 placeholder — swapped for the real image once it loads. */
