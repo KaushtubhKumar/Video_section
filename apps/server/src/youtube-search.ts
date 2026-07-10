@@ -24,10 +24,30 @@ const DEFAULT_QUERIES = [
 
 function getQueries(): string[] {
   const override = process.env.YOUTUBE_SEARCH_QUERIES;
-  if (override && override.trim().length > 0) {
-    return override.split("|").map((q) => q.trim()).filter(Boolean);
-  }
-  return DEFAULT_QUERIES;
+  const full =
+    override && override.trim().length > 0
+      ? override.split("|").map((q) => q.trim()).filter(Boolean)
+      : DEFAULT_QUERIES;
+
+  const batchSize = Number(process.env.YOUTUBE_SEARCH_QUERY_BATCH_SIZE ?? 0);
+  // 0 (default) = use every query every run, same as before. Set this to
+  // rotate a subset per run instead — e.g. batchSize=8 with 24 total
+  // queries means each run only spends 8x100=800 quota units instead of
+  // 2400, and a scheduled job running every few hours cycles through the
+  // full list across the day for the same total coverage.
+  if (batchSize <= 0 || batchSize >= full.length) return full;
+
+  // Deterministic rotation based on wall-clock time, no state to persist:
+  // every ~N hours (window size = 24h / number of batches) picks a
+  // different slice, so back-to-back runs within the same window return
+  // the same slice (harmless — dedup in store.ts skips repeats) while
+  // spaced-out scheduled runs naturally cycle through everything.
+  const batchCount = Math.ceil(full.length / batchSize);
+  const windowMs = 86400000 / batchCount;
+  const windowIndex = Math.floor(Date.now() / windowMs) % batchCount;
+  const start = windowIndex * batchSize;
+
+  return full.slice(start, start + batchSize);
 }
 
 function apiKey() {

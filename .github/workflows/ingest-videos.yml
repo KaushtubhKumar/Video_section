@@ -1,0 +1,24 @@
+name: Ingest AI videos
+
+on:
+  schedule:
+    # Every 6 hours. Adjust freely — cron is UTC.
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {} # lets you trigger it manually from the Actions tab too
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ingest endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.INGEST_URL }}/api/ingest" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          body=$(echo "$response" | head -n -1)
+          status=$(echo "$response" | tail -n 1)
+          echo "Response: $body"
+          if [ "$status" -ge 400 ]; then
+            echo "Ingest endpoint returned HTTP $status"
+            exit 1
+          fi
