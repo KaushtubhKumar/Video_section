@@ -74,7 +74,17 @@ export async function discoverVideos(): Promise<DiscoveredVideo[]> {
       const url = `${API_BASE}/search?${params.toString()}`;
       const res = await fetch(url);
       if (!res.ok) {
-        console.error(`[youtube-search] search.list failed for "${q}": ${res.status}`);
+        const body = await res.text().catch(() => "");
+        console.error(`[youtube-search] search.list failed for "${q}": ${res.status} ${body.slice(0, 400)}`);
+        // Quota exhausted (daily 10k units, or per-100s burst) — every
+        // remaining query will fail identically, so stop burning API calls
+        // and log the useful part just once.
+        if (res.status === 403 || res.status === 429) {
+          if (/quotaExceeded|rateLimitExceeded|userRateLimitExceeded/i.test(body)) {
+            console.error("[youtube-search] YouTube API quota exhausted — stopping discovery for this run");
+            return [...seen.values()];
+          }
+        }
         break;
       }
       const json = await res.json();

@@ -1,4 +1,5 @@
-import type { Video, ToolCategory } from "@video-module/shared";
+import type { Video } from "@video-module/shared";
+import { categorize, isLikelyAiRelated } from "./categorize";
 
 const API_BASE = "https://www.googleapis.com/youtube/v3";
 
@@ -8,7 +9,8 @@ function apiKey() {
   return key;
 }
 
-function parseIsoDuration(iso: string): number {
+function parseIsoDuration(iso: string | undefined | null): number {
+  if (!iso) return 0;
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return 0;
   const [, h, m, s] = match;
@@ -32,15 +34,13 @@ function accentFor(videoId: string) {
 }
 
 /**
- * Turns discovered + LLM-classified video IDs into full metadata records.
- * Unlike the old channel-based version, the source of truth for a video's
- * category is whatever relevance-gate.ts assigned it — not a channel config.
+ * Turns discovered video IDs into full metadata records. Category and
+ * AI-relevance are both determined locally via keyword matching
+ * (see categorize.ts) — no LLM call. Videos that don't clear the basic
+ * AI-relevance floor are dropped here (search.list results are loose and
+ * sometimes return unrelated videos even for AI-specific queries).
  */
-export async function enrichVideos(
-  gated: { videoId: string; toolCategory: ToolCategory }[]
-): Promise<Video[]> {
-  const categoryByVideoId = new Map(gated.map((g) => [g.videoId, g.toolCategory]));
-  const videoIds = gated.map((g) => g.videoId);
+export async function enrichVideos(videoIds: string[]): Promise<Video[]> {
   const results: Video[] = [];
 
   const batches: string[][] = [];
@@ -60,27 +60,40 @@ export async function enrichVideos(
     const json = await res.json();
 
     for (const item of json.items ?? []) {
-      const title: string = item.snippet.title;
+      // Deleted/private/region-restricted videos sometimes come back with
+      // a partial object (no snippet at all) — skip those outright.
+      if (!item.snippet) continue;
+
+      const title: string = item.snippet.title ?? "";
       const videoId: string = item.id;
-      const toolCategory = categoryByVideoId.get(videoId) ?? "general-ai";
+      const description: string = item.snippet.description ?? "";
+
+      if (!isLikelyAiRelated(title, description)) continue;
+      const toolCategory = categorize(title, description);
 
       results.push({
         id: videoId,
         slug: slugify(title, videoId),
         title,
-        description: item.snippet.description ?? "",
-        toolName: item.snippet.channelTitle,
+        description,
+        toolName: item.snippet.channelTitle ?? "Unknown",
         toolCategory,
         youtubeId: videoId,
         thumbnail:
           item.snippet.thumbnails?.maxres?.url ??
           item.snippet.thumbnails?.high?.url ??
-          item.snippet.thumbnails?.default?.url,
-        durationSeconds: parseIsoDuration(item.contentDetails.duration),
+          item.snippet.thumbnails?.default?.url ??
+          "",
+        // contentDetails can be missing (live streams, some restricted
+        // videos) — parseIsoDuration handles undefined/null safely.
+        durationSeconds: parseIsoDuration(item.contentDetails?.duration),
         views: Number(item.statistics?.viewCount ?? 0),
         likes: Number(item.statistics?.likeCount ?? 0),
-        publishedAt: item.snippet.publishedAt.slice(0, 10),
-        author: { name: item.snippet.channelTitle, avatar: item.snippet.channelTitle.slice(0, 2).toUpperCase() },
+        publishedAt: (item.snippet.publishedAt ?? new Date().toISOString()).slice(0, 10),
+        author: {
+          name: item.snippet.channelTitle ?? "Unknown",
+          avatar: (item.snippet.channelTitle ?? "??").slice(0, 2).toUpperCase(),
+        },
         tags: [toolCategory],
         accent: accentFor(videoId),
       });

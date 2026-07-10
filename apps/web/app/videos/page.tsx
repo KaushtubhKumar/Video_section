@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { VideoTable } from "@/components/videos/VideoTable";
+import { VideosPageClient } from "@/components/videos/VideosPageClient";
 import { VideosShell } from "@/components/videos/VideosShell";
 import { getAllVideos } from "@/lib/videos-data";
 
@@ -53,7 +53,7 @@ export default async function VideosPage() {
               </div>
             </div>
 
-            <VideoTable videos={videos} />
+            <VideosPageClient videos={videos} />
           </div>
         </div>
       </VideosShell>
